@@ -2,3 +2,6 @@ __pycache__
 *.aux
 *.log
 *.out
+*.bbl
+*.blg
+*.dvi
