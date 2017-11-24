@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from util import *
 from mcmc import *
 
-SHOW = [1, 1, 1, 1]
+SHOW = [0, 0, 0, 0, 1]
 
 # initial values for the model
 mstar = 1.14 * M_SUN
@@ -28,6 +28,8 @@ runs = 1000000
 # get the MCMC data
 models, accept, params = mcmc(burn, runs, msini, period, t0, mstar, 
     'HD209458_3_KECK.vels')
+models2 = mcmc(burn, runs, msini, period, t0, mstar,
+    'HD209458_3_KECK_transitless.vels')[0]
 
 if SHOW[0]:
     # sort the arguments by parameter
@@ -109,5 +111,34 @@ if SHOW[3]:
     plt.xlabel('Phased Time (days)')
     plt.ylabel('Radial Velocity (m/s)')
     
-if SHOW[2] or SHOW[3]:
+# the MCMC with transitless data points
+if SHOW[4]:
+    # the models' values of the parameters
+    msini = np.array([abs(model[0]) for model in models2])
+    period = np.array([model[1] for model in models2])
+    time = np.array([model[2] for model in models2])
+    # the median values of the parameters
+    med_m = np.median(msini)
+    med_p = np.median(period)
+    med_t = np.median(time)
+    # the standard deviations of the parameters
+    std_m = sig_figs(np.std(msini) / M_JUP,2)
+    std_p = sig_figs(np.std(period))
+    std_t = sig_figs(np.std(time), 8)
+    print('Median M*sin(i):', med_m / M_JUP, '±', std_m, 'M_J')
+    print('Median period:', med_p, '±', std_p, 'days')
+    print('Median time zero:', med_t, '±', std_t, 'days')
+    plt.figure()
+    # the observed phased RV curve
+    t, rv, rv_err = read('HD209458_3_KECK_transitless.vels')
+    tphase = (med_t - t) % med_p
+    plt.errorbar(tphase, rv, yerr=rv_err, fmt='o')
+    # the best-fit phased RV curve
+    t = np.linspace(0, med_p, 50)
+    rv_mcmc = radial_velocity(med_m, med_p*86400, t, 0, mstar)
+    plt.plot(t, rv_mcmc)
+    plt.xlabel('Phased Time (days)')
+    plt.ylabel('Radial Velocity (m/s)')
+
+if SHOW[2] or SHOW[3] or SHOW[4]:
     plt.show()
