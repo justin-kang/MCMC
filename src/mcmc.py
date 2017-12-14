@@ -81,14 +81,14 @@ def mcmc(burn, runs, msini, period, t0, mstar, filename):
     for i in range(runs):
         m, p, t, chi2, accepted, param = \
             _model(msini, period, t0, chi, data, mstar)
-        # store the results for statistics for the after-burn phase
-        models.append((m, p, t))
-        accept.append(accepted)
-        params.append(param)
         # accept the new model and update, otherwise repeat with old values
         if accepted:
             msini = (m, m_err)
             period = (p, p_err)
             t0 = (t, t_err)
             chi = chi2
+        # store the results for statistics for the after-burn phase
+        models.append((msini, period, t0))
+        accept.append(accepted)
+        params.append(param)
     return models, accept, params
